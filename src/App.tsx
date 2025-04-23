@@ -1,9 +1,10 @@
-import { Container, Text } from '@chakra-ui/react';
+import { Container } from '@chakra-ui/react';
+import FolderDropComponent from './components/FolderDropComponent';
 
 function App() {
   return (
-    <Container>
-      <Text>Hello World</Text>
+    <Container h="100dvh">
+      <FolderDropComponent />
     </Container>
   );
 }
