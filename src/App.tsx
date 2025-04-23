@@ -1,10 +1,12 @@
 import { Container } from '@chakra-ui/react';
-import FolderDropComponent from './components/FolderDropComponent';
+// import FolderDropComponent from './components/FolderDropComponent';
+import ReactDropzone from './components/ReactDropzone';
 
 function App() {
   return (
     <Container h="100dvh">
-      <FolderDropComponent />
+      {/* <FolderDropComponent /> */}
+      <ReactDropzone />
     </Container>
   );
 }
