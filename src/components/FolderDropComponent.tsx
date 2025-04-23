@@ -8,6 +8,7 @@ interface FileWithPath extends File {
 // 내장 타입과 충돌하지 않도록 타입 별칭 사용
 type FileSystemEntryExt = FileSystemEntry & {
   fullPath?: string;
+  name?: string; // 파일/폴더 이름을 위한 name 속성 추가
 };
 
 type FileEntryExt = FileSystemFileEntry &
@@ -47,6 +48,11 @@ export default function FolderDropComponent() {
     while (queue.length > 0) {
       const entry = queue.shift()!;
 
+      // .DS_Store 파일 제외
+      if (entry.name === '.DS_Store') {
+        continue; // 이 파일은 건너뛰기
+      }
+
       if (entry.isFile) {
         fileEntries.push(entry as FileEntryExt);
       } else if (entry.isDirectory) {
@@ -58,7 +64,7 @@ export default function FolderDropComponent() {
           return new Promise((resolve) => {
             directoryReader.readEntries(
               (entries) => {
-                resolve(entries as FileSystemEntryExt[]);
+                resolve(entries);
               },
               (error) => {
                 console.error('Error reading directory entries:', error);
@@ -78,8 +84,10 @@ export default function FolderDropComponent() {
           entries = entries.concat(readBatch);
         } while (readBatch.length > 0);
 
-        // 읽은 항목들을 큐에 추가
-        entries.forEach((entry) => queue.push(entry));
+        // 읽은 항목들을 큐에 추가 (.DS_Store 제외)
+        entries
+          .filter((entry) => entry.name !== '.DS_Store')
+          .forEach((entry) => queue.push(entry));
       }
     }
 
@@ -91,6 +99,12 @@ export default function FolderDropComponent() {
     return new Promise((resolve) => {
       entry.file(
         (file) => {
+          // .DS_Store 파일 추가 확인 (혹시 필터링이 안 된 경우를 대비)
+          if (file.name === '.DS_Store') {
+            resolve({} as FileWithPath);
+            return;
+          }
+
           // 상대 경로 정보 추가
           const fileWithPath = file as FileWithPath;
           fileWithPath.relativePath = entry.fullPath;
@@ -121,8 +135,11 @@ export default function FolderDropComponent() {
           fileEntries.map((entry) => getFileFromEntry(entry))
         );
 
-        // 빈 파일 객체 필터링 (에러 핸들링에서 생성된 것)
-        const validFiles = filesData.filter((file) => file.name);
+        // 빈 파일 객체와 .DS_Store 파일 필터링
+        const validFiles = filesData.filter(
+          (file) => file.name && file.name !== '.DS_Store'
+        );
+
         setFiles(validFiles);
       } catch (error) {
         console.error('Error processing dropped folder:', error);
