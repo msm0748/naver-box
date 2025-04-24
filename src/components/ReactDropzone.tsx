@@ -1,31 +1,47 @@
-import { useRef, useState, useCallback } from 'react';
-import { FileWithPath, useDropzone } from 'react-dropzone';
+import { Box } from '@chakra-ui/react';
+import { useState, useCallback } from 'react';
+import {
+  DropEvent,
+  FileRejection,
+  FileWithPath,
+  useDropzone,
+} from 'react-dropzone';
 
 export default function CustomDropzone() {
   const [isFolder, setIsFolder] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // 파일/폴더 업로드 버튼 클릭 시 상태 변경 및 input 클릭 트리거
   const handleFileUpload = () => {
     setIsFolder(false);
-    setTimeout(() => inputRef.current && inputRef.current.click(), 0);
+    setTimeout(() => open(), 0);
   };
   const handleFolderUpload = () => {
     setIsFolder(true);
-    setTimeout(() => inputRef.current && inputRef.current.click(), 0);
+    setTimeout(() => open(), 0);
   };
 
   // 파일 드롭/선택 시 처리
-  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
-    // .DS_Store 파일 필터링
-    const filtered = acceptedFiles.filter(
-      (file) => file.name !== '.DS_Store' && !file.path?.endsWith('.DS_Store')
-    );
-    console.log('Drop completed!', filtered);
-  }, []);
+  const onDrop = useCallback(
+    (acceptedFiles: FileWithPath[], _: FileRejection[], event: DropEvent) => {
+      // .DS_Store 파일 필터링
+      const filtered = acceptedFiles.filter(
+        (file) => file.name !== '.DS_Store' && !file.path?.endsWith('.DS_Store')
+      );
+
+      // const dragEvent = event as React.DragEvent<HTMLElement>; // ✅ 타입 단언
+      // const target = dragEvent.target as HTMLElement;
+      // console.log(target.dataset.resourcePath, 'event');
+      console.log('Drop completed!', filtered);
+
+      if ('target' in event && event.target instanceof HTMLElement) {
+        console.log(event.target.dataset.resourcePath, 'event');
+      }
+    },
+    []
+  );
 
   // dropzone 훅 사용, 클릭은 막고 input을 직접 트리거
-  const { getRootProps, getInputProps, acceptedFiles, isDragActive } =
+  const { getRootProps, getInputProps, acceptedFiles, isDragActive, open } =
     useDropzone({
       onDrop,
       noClick: true,
@@ -44,6 +60,14 @@ export default function CustomDropzone() {
         }}
         {...getRootProps()}
       >
+        <Box
+          className="folder"
+          border="1px solid"
+          w="50px"
+          h="50px"
+          bg="blue"
+          data-resource-path="folder"
+        ></Box>
         {isDragActive ? (
           <p>여기에 파일을 놓으세요</p>
         ) : (
@@ -52,7 +76,6 @@ export default function CustomDropzone() {
       </div>
       <input
         {...getInputProps()}
-        ref={inputRef}
         style={{ display: 'none' }}
         {...(isFolder ? { webkitdirectory: 'true', directory: 'true' } : {})}
       />
