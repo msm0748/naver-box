@@ -21,43 +21,36 @@ export default function CustomDropzone() {
   };
 
   // 파일 드롭/선택 시 처리
-  const onDrop = useCallback(
-    (acceptedFiles: FileWithPath[], _: FileRejection[], event: DropEvent) => {
-      // .DS_Store 파일 필터링
-      const filtered = acceptedFiles.filter(
-        (file) => file.name !== '.DS_Store' && !file.path?.endsWith('.DS_Store')
-      );
+  const onDrop = (
+    acceptedFiles: FileWithPath[],
+    _: FileRejection[],
+    event: DropEvent
+  ) => {
+    // .DS_Store 파일 필터링
+    const filtered = acceptedFiles.filter(
+      (file) => file.name !== '.DS_Store' && !file.path?.endsWith('.DS_Store')
+    );
 
-      // const dragEvent = event as React.DragEvent<HTMLElement>; // ✅ 타입 단언
-      // const target = dragEvent.target as HTMLElement;
-      // console.log(target.dataset.resourcePath, 'event');
-      console.log('Drop completed!', filtered);
+    console.log('Drop completed!', filtered);
 
-      if ('target' in event && event.target instanceof HTMLElement) {
-        console.log(event.target.dataset.resourcePath, 'event');
-      }
-    },
-    []
-  );
+    if ('target' in event && event.target instanceof HTMLElement) {
+      console.log(event.target.dataset.resourcePath, 'event');
+    }
+  };
 
   // dropzone 훅 사용, 클릭은 막고 input을 직접 트리거
-  const { getRootProps, getInputProps, acceptedFiles, isDragActive, open } =
-    useDropzone({
-      onDrop,
-      noClick: true,
-    });
+  const { getRootProps, getInputProps, acceptedFiles, open } = useDropzone({
+    onDrop,
+    noClick: true,
+  });
 
   return (
     <section className="container">
-      <div
-        style={{
-          height: '300px',
-          border: '2px dashed #aaa',
-          borderRadius: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+      <Box
+        w="full"
+        h="400px"
+        border="1px solid black"
+        p="4"
         {...getRootProps()}
       >
         <Box
@@ -68,12 +61,7 @@ export default function CustomDropzone() {
           bg="blue"
           data-resource-path="folder"
         ></Box>
-        {isDragActive ? (
-          <p>여기에 파일을 놓으세요</p>
-        ) : (
-          <p>파일이나 폴더를 드래그하거나, 버튼을 클릭하세요</p>
-        )}
-      </div>
+      </Box>
       <input
         {...getInputProps()}
         style={{ display: 'none' }}
